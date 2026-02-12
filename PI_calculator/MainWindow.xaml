@@ -5,8 +5,63 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PI_calculator"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Pi_Calculator" Height="450" Width="800">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#F0F0F0" BorderBrush="Gray" BorderThickness="0,0,0,1">
+            <TextBlock Text="PI Calculator" 
+                       FontSize="18"
+                       FontWeight="Black"
+                       HorizontalAlignment="Center" 
+                       Margin="5"/>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Content="Sample Size" VerticalAlignment="Center" FontSize="18"/>
+            <TextBox Grid.Column="1" Margin="5" VerticalContentAlignment="Center" FontSize="16" Text="{Binding sample}" />
+            <Button Grid.Column="2" Content="Add" Padding="20,5" Margin="5" FontSize="16" Command="{Binding command}" CommandParameter="{Binding}"/>
+        </Grid>
+
+
+
+        <DataGrid Grid.Row="2" 
+          ItemsSource="{Binding missions}"
+          AutoGenerateColumns="False" 
+          CanUserAddRows="False"
+          HeadersVisibility="Column"
+          GridLinesVisibility="All"
+          HorizontalGridLinesBrush="LightGray"
+          VerticalGridLinesBrush="LightGray">
+
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="#D9E5F3"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                    <Setter Property="Padding" Value="10,5"/>
+                    <Setter Property="FontSize" Value="16"/>
+                    <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                    <Setter Property="BorderBrush" Value="Gray"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Sample" Binding="{Binding Sample}" Width="*"/>
+                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="*"/>
+                <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
     </Grid>
 </Window>
