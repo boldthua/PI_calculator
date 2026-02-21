@@ -26,7 +26,7 @@ namespace PI_calculator
             await Parallel.ForAsync(0, batchSize, new ParallelOptions() { MaxDegreeOfParallelism = 4 }, (index, token) =>
             {
                 Double a = random.NextDouble();
-                Double b = random.NextDouble();
+                Double b = random.NextDouble();//
                 if (a * a + b * b <= 1)
                 {
                     lock (locker)
