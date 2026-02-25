@@ -9,14 +9,15 @@ namespace PI_calculator
 {
     internal class MainContract
     {
-        public interface IMainView 
+        public interface IMainView
         {
             void RenderDatas(List<PiModelDTO> list);
         }
 
-        public interface IMainPresenter 
+        public interface IMainPresenter
         {
             void CreateMission(long sample);
+            void Reflash();
         }
     }
 }

@@ -29,5 +29,9 @@ namespace PI_calculator.Presenters
             piRepository.AddModel(model);
             view.RenderDatas(piRepository.GetData());
         }
+        public void Reflash()
+        {
+            view.RenderDatas(piRepository.GetData());
+        }
     }
 }

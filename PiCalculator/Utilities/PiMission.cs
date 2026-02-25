@@ -25,20 +25,25 @@ namespace PI_calculator
 
             await Parallel.ForAsync(0, batchSize, new ParallelOptions() { MaxDegreeOfParallelism = 4 }, (index, token) =>
             {
-                Double a = random.NextDouble();
-                Double b = random.NextDouble();//
-                if (a * a + b * b <= 1)
+                Debug.WriteLine($"第{index + 1}個batch開始執行");
+                for (int i = 0; i < count; i++)
                 {
-                    lock (locker)
-                        sum++;
+                    Double a = random.NextDouble();
+                    Double b = random.NextDouble();
+                    if (a * a + b * b <= 1)
+                    {
+                        lock (locker)
+                            sum++;
+                    }
                 }
+                Debug.WriteLine($"第{index + 1}個batch執行完成");
                 return ValueTask.CompletedTask;
             });
 
             return (4.0 * sum) / (Sample - 1);
         }
 
-        
+
 
     }
 }
