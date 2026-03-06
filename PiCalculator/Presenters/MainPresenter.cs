@@ -15,23 +15,56 @@ namespace PI_calculator.Presenters
     {
         PiRepository piRepository = new PiRepository();
         IMainView view;
+        Queue<PiMission> missions = new Queue<PiMission>();
+        Object writeObj = new object();
+        Object readObj = new object();
+
         public MainPresenter(IMainView view)
         {
             this.view = view;
+
         }
-        public async void CreateMission(long sample)
+        public void SendMissionRequest(long sample)
         {
             PiMission piMission = new PiMission(sample);
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            double value = (double)await piMission.Calculate();
-            string time = stopwatch.Elapsed.TotalSeconds.ToString();
-            PiModelDTO model = new PiModelDTO(sample, time, value);
-            piRepository.AddModel(model);
-            view.RenderDatas(piRepository.GetData());
+            lock (writeObj)
+                missions.Enqueue(piMission);
+
         }
-        public void Reflash()
+        public void FetchCompletedMissions()
         {
-            view.RenderDatas(piRepository.GetData());
+            view.OnMissionResponse(piRepository.GetData());
+        }
+
+        public async void StartMission()
+        {
+            await Task.Run(() =>
+            {
+                while (true)
+                {
+                    if (missions.Count > 0)
+                    {
+                        Stopwatch stopwatch = Stopwatch.StartNew();
+                        PiMission piMission = null;
+                        lock (readObj)
+                            piMission = missions.Dequeue();
+                        Task.Run(async () =>
+                        {
+                            double value = (double)await piMission.Calculate();
+                            string time = stopwatch.Elapsed.TotalSeconds.ToString();
+                            PiModelDTO model = new PiModelDTO(piMission.Sample, time, value);
+                            piRepository.AddModel(model);
+                            view.OnMissionResponse(piRepository.GetData());
+                        });
+                    }
+                }
+            }
+            );
+        }
+
+        public void StopMission()
+        {
+            throw new NotImplementedException();
         }
     }
 }

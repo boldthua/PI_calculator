@@ -26,11 +26,14 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <Label Content="Sample Size" VerticalAlignment="Center" FontSize="18"/>
             <TextBox Grid.Column="1" Margin="5" VerticalContentAlignment="Center" FontSize="16" Text="{Binding sample}" />
-            <Button Grid.Column="2" Content="Add" Padding="20,5" Margin="5" FontSize="16" Command="{Binding command}" CommandParameter="{Binding}"/>
+            <Button Grid.Column="2" Content="Add" Padding="20,5" Margin="5" FontSize="16" IsEnabled="{Binding IsToStop}" Command="{Binding command}" CommandParameter="{Binding}"/>
+            <Button Grid.Column="3" Content="{Binding StopOrNot}" Padding="20,5" Margin="5" FontSize="16" Command="{Binding stopCommand}" CommandParameter="{Binding}"/>
+
         </Grid>
 
 
