@@ -49,24 +49,32 @@ namespace PI_calculator
 
         public void AddMission()
         {
-            if (CheckSample())
+            lock (checkListObj)
             {
-                lock (checkListObj)
+                if (CheckSample())
                 {
                     checkList.Add(sample, null);
+                    presenter.SendMissionRequest(sample);
                 }
-                presenter.SendMissionRequest(sample);
             }
         }
         public void StopMission()
         {
+            if (StopOrNot == "Stop")
+            {
+                var result = MessageBox.Show("您確定要取消嗎？", "確認", MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.No)
+                    return;
+            }
             if (_isToStop == true)
             {
                 IsToStop = false;
-
+                presenter.StopMission();
                 return;
             }
             IsToStop = true;
+            presenter.StartMission();
+
         }
         public bool CheckSample()
         {
@@ -86,9 +94,8 @@ namespace PI_calculator
                 missions.Clear();
                 foreach (var model in list)
                 {
-                    PiModel mission = new PiModel(model.Sample, model.Time, model.Value);
+                    PiModel mission = new PiModel(model);
                     missions.Add(mission);
-
                 }
             });
         }
@@ -99,7 +106,6 @@ namespace PI_calculator
             stopCommand = new RelayCommand(StopMission);
             presenter = new MainPresenter(this);
 
-
             presenter.StartMission();
 
 
@@ -109,9 +115,5 @@ namespace PI_calculator
                 presenter.FetchCompletedMissions();
             }, null, 0, 1000);
         }
-
-
-
-        // 再問一次 get; set;
     }
 }

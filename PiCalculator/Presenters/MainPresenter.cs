@@ -4,9 +4,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using PI_calculator.Models;
 using PI_calculator.Presenters;
+
 using static PI_calculator.MainContract;
 
 namespace PI_calculator.Presenters
@@ -18,7 +21,8 @@ namespace PI_calculator.Presenters
         Queue<PiMission> missions = new Queue<PiMission>();
         Object writeObj = new object();
         Object readObj = new object();
-
+        CancellationTokenSource cts = new CancellationTokenSource();
+        AutoResetEvent autoEvent = new AutoResetEvent(false);
         public MainPresenter(IMainView view)
         {
             this.view = view;
@@ -29,7 +33,7 @@ namespace PI_calculator.Presenters
             PiMission piMission = new PiMission(sample);
             lock (writeObj)
                 missions.Enqueue(piMission);
-
+            autoEvent.Set();
         }
         public void FetchCompletedMissions()
         {
@@ -42,18 +46,31 @@ namespace PI_calculator.Presenters
             {
                 while (true)
                 {
+                    autoEvent.WaitOne();
+
+
+                    if (cts.IsCancellationRequested)
+                    {
+                        cts = new CancellationTokenSource();
+                        break;
+                    }
                     if (missions.Count > 0)
                     {
+
                         Stopwatch stopwatch = Stopwatch.StartNew();
-                        PiMission piMission = null;
+                        PiMission piMission = new PiMission(0);
                         lock (readObj)
                             piMission = missions.Dequeue();
                         Task.Run(async () =>
                         {
-                            double value = (double)await piMission.Calculate();
-                            string time = stopwatch.Elapsed.TotalSeconds.ToString();
-                            PiModelDTO model = new PiModelDTO(piMission.Sample, time, value);
+                            PiModelDTO model = new PiModelDTO(piMission.Sample);
                             piRepository.AddModel(model);
+                            double result = (double)await piMission.Calculate(model);
+                            if (model.IsCanceled == false)
+                            {
+                                model.Value = result.ToString();
+                            }
+                            model.Time = stopwatch.Elapsed.TotalSeconds.ToString();
                             view.OnMissionResponse(piRepository.GetData());
                         });
                     }
@@ -64,7 +81,7 @@ namespace PI_calculator.Presenters
 
         public void StopMission()
         {
-            throw new NotImplementedException();
+            cts.Cancel();
         }
     }
 }
