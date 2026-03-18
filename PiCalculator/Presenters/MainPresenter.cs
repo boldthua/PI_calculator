@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -18,11 +19,10 @@ namespace PI_calculator.Presenters
     {
         PiRepository piRepository = new PiRepository();
         IMainView view;
-        Queue<PiMission> missions = new Queue<PiMission>();
+        ConcurrentQueue<PiMission> missions = new ConcurrentQueue<PiMission>();
         Object writeObj = new object();
-        Object readObj = new object();
         CancellationTokenSource cts = new CancellationTokenSource();
-        AutoResetEvent autoEvent = new AutoResetEvent(false);
+        private static readonly SemaphoreSlim semaphore = new SemaphoreSlim(0, 4);
         public MainPresenter(IMainView view)
         {
             this.view = view;
@@ -30,10 +30,16 @@ namespace PI_calculator.Presenters
         }
         public void SendMissionRequest(long sample)
         {
-            PiMission piMission = new PiMission(sample);
             lock (writeObj)
-                missions.Enqueue(piMission);
-            autoEvent.Set();
+            {
+                //雙重鎖定
+                if (semaphore.CurrentCount <= 4)
+                {
+                    PiMission piMission = new PiMission(sample);
+                    missions.Enqueue(piMission);
+                    semaphore.Release();
+                }
+            }
         }
         public void FetchCompletedMissions()
         {
@@ -46,8 +52,7 @@ namespace PI_calculator.Presenters
             {
                 while (true)
                 {
-                    autoEvent.WaitOne();
-
+                    semaphore.Wait();
 
                     if (cts.IsCancellationRequested)
                     {
@@ -58,9 +63,7 @@ namespace PI_calculator.Presenters
                     {
 
                         Stopwatch stopwatch = Stopwatch.StartNew();
-                        PiMission piMission = new PiMission(0);
-                        lock (readObj)
-                            piMission = missions.Dequeue();
+                        missions.TryDequeue(out PiMission piMission);
                         Task.Run(async () =>
                         {
                             PiModelDTO model = new PiModelDTO(piMission.Sample);
@@ -72,6 +75,7 @@ namespace PI_calculator.Presenters
                             }
                             model.Time = stopwatch.Elapsed.TotalSeconds.ToString();
                             view.OnMissionResponse(piRepository.GetData());
+                            semaphore.Release();
                         });
                     }
                 }

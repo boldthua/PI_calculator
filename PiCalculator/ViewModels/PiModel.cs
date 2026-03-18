@@ -16,9 +16,18 @@ namespace PI_calculator
     {
         public long Sample { get; set; }
         public string Time { get; set; }
-        public bool IsCompleted = false;
+        private bool _isCompleted = false;
         private string _value;
         private double _progress;
+        public bool IsCompleted
+        {
+            get => _isCompleted;
+            set
+            {
+                _isCompleted = value;
+                OnPropertyChanged();
+            }
+        }
         public double Progress
         {
             get => _progress;

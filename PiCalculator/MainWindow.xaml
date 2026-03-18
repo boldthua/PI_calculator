@@ -5,142 +5,535 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PiCalculator"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="MainWindow"
-    Width="800"
-    Height="450"
+    Title="PI Calculator - 圓周率計算器"
+    Width="900"
+    Height="600"
     mc:Ignorable="d">
+
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+        <!-- 鮮豔配色方案 -->
+        <LinearGradientBrush x:Key="VibrantGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#FF6B35" Offset="0"/>
+            <GradientStop Color="#F7931E" Offset="0.5"/>
+            <GradientStop Color="#FDC830" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="PurpleGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#667EEA" Offset="0"/>
+            <GradientStop Color="#764BA2" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="GreenGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#11998E" Offset="0"/>
+            <GradientStop Color="#38EF7D" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="RedGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#FF416C" Offset="0"/>
+            <GradientStop Color="#FF4B2B" Offset="1"/>
+        </LinearGradientBrush>
+
+        <SolidColorBrush x:Key="BrightYellow" Color="#FFD700"/>
+        <SolidColorBrush x:Key="BrightCyan" Color="#00D9FF"/>
+        <SolidColorBrush x:Key="BrightPink" Color="#FF1744"/>
+        <SolidColorBrush x:Key="BrightPurple" Color="#D500F9"/>
+        <SolidColorBrush x:Key="BrightGreen" Color="#00E676"/>
+        <SolidColorBrush x:Key="BrightOrange" Color="#FF6D00"/>
+
+        <!-- 發光陰影效果 -->
+        <DropShadowEffect x:Key="GlowYellow" 
+                          Color="#FFD700" 
+                          BlurRadius="25" 
+                          ShadowDepth="0" 
+                          Opacity="0.8"/>
+
+        <DropShadowEffect x:Key="GlowPurple" 
+                          Color="#D500F9" 
+                          BlurRadius="25" 
+                          ShadowDepth="0" 
+                          Opacity="0.7"/>
+
+        <DropShadowEffect x:Key="GlowCyan" 
+                          Color="#00D9FF" 
+                          BlurRadius="20" 
+                          ShadowDepth="0" 
+                          Opacity="0.6"/>
+
+        <!-- 彈跳動畫按鈕樣式 -->
+        <Style x:Key="BounceButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource VibrantGradient}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="25"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <Border.Effect>
+                                <DropShadowEffect Color="#FF6B35" BlurRadius="15" ShadowDepth="0" Opacity="0.6"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                                                           To="1.15" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <BackEase EasingMode="EaseOut" Amplitude="0.3"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)"
+                                                           To="1.15" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <BackEase EasingMode="EaseOut" Amplitude="0.3"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                                                           To="1" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)"
+                                                           To="1" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.9" ScaleY="0.9"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stop 按鈕樣式 -->
+        <Style x:Key="StopButton" TargetType="Button" BasedOn="{StaticResource BounceButton}">
+            <Setter Property="Background" Value="{StaticResource RedGradient}"/>
+        </Style>
+
+        <!-- 取消按鈕樣式 -->
+        <Style x:Key="CancelButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource BrightPink}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="15"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                                                           To="1.1" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)"
+                                                           To="1.1" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                                                           To="1" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)"
+                                                           To="1" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 彩虹進度條樣式 -->
+        <Style x:Key="RainbowProgressBar" TargetType="ProgressBar">
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Grid>
+                            <Border Background="#E0E0E0" 
+                                    CornerRadius="10"
+                                    BorderThickness="2"
+                                    BorderBrush="#BDBDBD"/>
+                            <Border CornerRadius="10" ClipToBounds="True">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#FF0080" Offset="0"/>
+                                        <GradientStop Color="#FF8C00" Offset="0.25"/>
+                                        <GradientStop Color="#FFD700" Offset="0.5"/>
+                                        <GradientStop Color="#00FF00" Offset="0.75"/>
+                                        <GradientStop Color="#00BFFF" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Border x:Name="PART_Track">
+                                    <Grid>
+                                        <Border x:Name="PART_Indicator" 
+                                                HorizontalAlignment="Left"
+                                                CornerRadius="8">
+                                            <Border.Effect>
+                                                <DropShadowEffect Color="#FFD700" BlurRadius="10" ShadowDepth="0" Opacity="0.8"/>
+                                            </Border.Effect>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 現代化 TextBox 樣式 -->
+        <Style x:Key="VibrantTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BrightCyan}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="15">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#00D9FF" BlurRadius="12" ShadowDepth="0" Opacity="0.4"/>
+                            </Border.Effect>
+                            <ScrollViewer x:Name="PART_ContentHost" 
+                                        Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                          To="#D500F9" Duration="0:0:0.3"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                          To="#00D9FF" Duration="0:0:0.3"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Window.Resources>
+
     <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#FFF5F7" Offset="0"/>
+                <GradientStop Color="#FFE3E8" Offset="0.5"/>
+                <GradientStop Color="#F5F0FF" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border
-            Grid.Row="0"
-            Background="#F0F0F0"
-            BorderBrush="Gray"
-            BorderThickness="0,0,0,1">
-            <TextBlock
-                Margin="5"
-                HorizontalAlignment="Center"
-                FontSize="18"
-                FontWeight="Black"
-                Text="PI Calculator" />
+        <!-- 標題區域 - 超醒目 -->
+        <Border Grid.Row="0"
+                Background="{StaticResource PurpleGradient}"
+                Padding="25,20"
+                Margin="15,15,15,10">
+            <Border.Effect>
+                <DropShadowEffect Color="#764BA2" BlurRadius="20" ShadowDepth="0" Opacity="0.6"/>
+            </Border.Effect>
+            <Border.RenderTransform>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Border.RenderTransform>
+            <Border.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                                           From="0.8" To="1" Duration="0:0:0.5">
+                                <DoubleAnimation.EasingFunction>
+                                    <ElasticEase EasingMode="EaseOut" Oscillations="1"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)"
+                                           From="0.8" To="1" Duration="0:0:0.5">
+                                <DoubleAnimation.EasingFunction>
+                                    <ElasticEase EasingMode="EaseOut" Oscillations="1"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Border.Triggers>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="🎯 " 
+                          FontSize="36"
+                          VerticalAlignment="Center"/>
+                <TextBlock Text="PI Calculator" 
+                          FontSize="36"
+                          FontWeight="ExtraBold"
+                          Foreground="White"
+                          VerticalAlignment="Center">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="#FFD700" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
+                    </TextBlock.Effect>
+                </TextBlock>
+                <TextBlock Text=" 圓周率計算器" 
+                          FontSize="24"
+                          FontWeight="SemiBold"
+                          Foreground="#FFEB3B"
+                          VerticalAlignment="Center"
+                          Margin="10,0,0,0"/>
+            </StackPanel>
         </Border>
 
-        <Grid Grid.Row="1" Margin="5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <!-- 輸入控制區域 -->
+        <Border Grid.Row="1"
+                Background="White"
+                CornerRadius="20"
+                Padding="30,25"
+                Margin="15,10,15,10">
+            <Border.Effect>
+                <DropShadowEffect Color="#00D9FF" BlurRadius="20" ShadowDepth="5" Opacity="0.3"/>
+            </Border.Effect>
 
-            <Label
-                VerticalAlignment="Center"
-                Content="Sample Size"
-                FontSize="18" />
-            <TextBox
-                Grid.Column="1"
-                Margin="5"
-                VerticalContentAlignment="Center"
-                FontSize="16"
-                Text="{Binding sample}" />
-            <Button
-                Grid.Column="2"
-                Margin="5"
-                Padding="20,5"
-                Command="{Binding command}"
-                CommandParameter="{Binding}"
-                Content="Add"
-                FontSize="16"
-                IsEnabled="{Binding IsToStop}" />
-            <Button
-                Grid.Column="3"
-                Margin="5"
-                Padding="20,5"
-                Command="{Binding stopCommand}"
-                CommandParameter="{Binding}"
-                Content="{Binding StopOrNot}"
-                FontSize="16" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-        </Grid>
+                <Border Grid.Column="0"
+                        Background="{StaticResource BrightCyan}"
+                        CornerRadius="15"
+                        Padding="15,10"
+                        VerticalAlignment="Center"
+                        Margin="0,0,15,0">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#00D9FF" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+                    </Border.Effect>
+                    <TextBlock Text="📊 Sample Size" 
+                              FontSize="20"
+                              FontWeight="Bold"
+                              Foreground="White"/>
+                </Border>
 
+                <TextBox Grid.Column="1"
+                        Style="{StaticResource VibrantTextBox}"
+                        Text="{Binding sample}"
+                        VerticalContentAlignment="Center"
+                        Margin="0,0,15,0"/>
 
+                <Button Grid.Column="2"
+                       Style="{StaticResource BounceButton}"
+                       Padding="35,12"
+                       Margin="0,0,15,0"
+                       Command="{Binding command}"
+                       CommandParameter="{Binding}"
+                       IsEnabled="{Binding IsToStop}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🚀 " FontSize="18"/>
+                        <TextBlock Text="START" FontSize="18"/>
+                    </StackPanel>
+                </Button>
 
-        <DataGrid
-            Grid.Row="2"
-            AutoGenerateColumns="False"
-            CanUserAddRows="False"
-            GridLinesVisibility="All"
-            HeadersVisibility="Column"
-            HorizontalGridLinesBrush="LightGray"
-            ItemsSource="{Binding missions}"
-            VerticalGridLinesBrush="LightGray">
+                <Button Grid.Column="3"
+                       Style="{StaticResource StopButton}"
+                       Padding="35,12"
+                       Command="{Binding stopCommand}"
+                       CommandParameter="{Binding}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⏹️ " FontSize="18"/>
+                        <TextBlock Text="{Binding StopOrNot}" FontSize="18"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
 
-            <DataGrid.ColumnHeaderStyle>
-                <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="#D9E5F3" />
-                    <Setter Property="Foreground" Value="Black" />
-                    <Setter Property="HorizontalContentAlignment" Value="Center" />
-                    <Setter Property="Padding" Value="10,5" />
-                    <Setter Property="FontSize" Value="16" />
-                    <Setter Property="BorderThickness" Value="0,0,1,1" />
-                    <Setter Property="BorderBrush" Value="Gray" />
-                </Style>
-            </DataGrid.ColumnHeaderStyle>
+        <!-- DataGrid 區域 -->
+        <Border Grid.Row="2"
+                Background="White"
+                CornerRadius="20"
+                Margin="15,10,15,15"
+                Padding="5">
+            <Border.Effect>
+                <DropShadowEffect Color="#764BA2" BlurRadius="20" ShadowDepth="5" Opacity="0.25"/>
+            </Border.Effect>
 
-            <DataGrid.Columns>
-                <DataGridTextColumn
-                    Width="*"
-                    Binding="{Binding Sample}"
-                    Header="Sample" />
-                <DataGridTextColumn
-                    Width="*"
-                    Binding="{Binding Time}"
-                    Header="Time" />
-                <DataGridTemplateColumn Width="*" Header="Value">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Grid Margin="5,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <Grid Margin="5,0">
-                                    <TextBlock
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center"
-                                        Text="{Binding Value}"
-                                        Visibility="{Binding IsCompleted, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <DataGrid AutoGenerateColumns="False"
+                     CanUserAddRows="False"
+                     GridLinesVisibility="None"
+                     HeadersVisibility="Column"
+                     ItemsSource="{Binding missions}"
+                     BorderThickness="0"
+                     Background="Transparent"
+                     RowBackground="#FAFAFA"
+                     AlternatingRowBackground="#F5F5F5">
 
-                                    <ProgressBar
-                                        Width="120"
-                                        Height="15"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center"
-                                        Visibility="{Binding IsToCancel, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                        Value="{Binding Progress}" />
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="{StaticResource VibrantGradient}"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="Padding" Value="20,12"/>
+                        <Setter Property="FontSize" Value="18"/>
+                        <Setter Property="FontWeight" Value="ExtraBold"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Height" Value="50"/>
+                    </Style>
+                </DataGrid.ColumnHeaderStyle>
+
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Height" Value="60"/>
+                        <Setter Property="FontSize" Value="16"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E3F2FD"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Padding" Value="15,0"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="Foreground" Value="#333"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#FFE082"/>
+                                <Setter Property="Foreground" Value="#333"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.CellStyle>
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Width="*"
+                                       Binding="{Binding Sample}"
+                                       Header="📝 SAMPLE">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Foreground" Value="{StaticResource BrightPurple}"/>
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Width="*"
+                                       Binding="{Binding Time}"
+                                       Header="⏱️ TIME">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Foreground" Value="{StaticResource BrightOrange}"/>
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTemplateColumn Width="2*" Header=" VALUE">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Margin="10,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- 值或進度條 -->
+                                    <Grid Grid.Column="0">
+                                        <Border Background="#E8F5E9"
+                                               CornerRadius="10"
+                                               Padding="12,6"
+                                               Visibility="{Binding IsCompleted, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <TextBlock Text="{Binding Value}"
+                                                      FontWeight="ExtraBold"
+                                                      FontSize="18"
+                                                      Foreground="{StaticResource BrightGreen}"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                        </Border>
+
+                                        <ProgressBar Style="{StaticResource RainbowProgressBar}"
+                                                    Visibility="{Binding IsToCancel, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                    Value="{Binding Progress}"
+                                                    Minimum="0"
+                                                    Maximum="100"/>
+                                    </Grid>
+
+                                    <!-- 取消按鈕 -->
+                                    <Button Grid.Column="1"
+                                           Style="{StaticResource CancelButton}"
+                                           Padding="15,8"
+                                           Margin="10,0,0,0"
+                                           Command="{Binding cancelCommand}"
+                                           Visibility="{Binding IsToCancel, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="❌ " FontSize="14"/>
+                                            <TextBlock Text="取消" FontSize="14"/>
+                                        </StackPanel>
+                                    </Button>
                                 </Grid>
-
-                                <Button
-                                    Grid.Column="2"
-                                    Padding="5,2"
-                                    Command="{Binding cancelCommand}"
-                                    Content="取消"
-                                    Cursor="Hand"
-                                    FontSize="12"
-                                    Visibility="{Binding IsToCancel, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                            </Grid>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
-
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
     </Grid>
 </Window>

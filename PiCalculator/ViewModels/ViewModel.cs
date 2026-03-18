@@ -107,6 +107,10 @@ namespace PI_calculator
             presenter = new MainPresenter(this);
 
             presenter.StartMission();
+            presenter.SendMissionRequest(1000000000);
+            //presenter.SendMissionRequest(100000001);
+            //presenter.SendMissionRequest(100000002);
+            //presenter.SendMissionRequest(100000003);
 
 
 
